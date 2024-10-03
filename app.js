@@ -13,6 +13,9 @@ const connectDB = require('./db/connect')
 const notFoundMiddleware = require('./middleware/not-found')
 const errorHandlerMiddleware = require('./middleware/error-handler')
 
+//routes import
+const authRouter = require('./routes/authRoutes')
+
 const app = express()
 
 app.use(morgan('tiny'))
@@ -21,6 +24,8 @@ app.use(express.json())
 app.get('/', (req, res) => {
   res.send('This is the fist ecommerce page')
 })
+
+app.use('/api/v1/auth', authRouter)
 
 app.use(notFoundMiddleware)
 app.use(errorHandlerMiddleware)
