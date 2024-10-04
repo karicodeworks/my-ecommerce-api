@@ -5,6 +5,7 @@ require('express-async-errors')
 
 //rest of imports
 const morgan = require('morgan')
+const cookieParser = require('cookie-parser')
 
 //Database connection import
 const connectDB = require('./db/connect')
@@ -20,8 +21,14 @@ const app = express()
 
 app.use(morgan('tiny'))
 app.use(express.json())
+app.use(cookieParser())
 
 app.get('/', (req, res) => {
+  res.send('This is the fist ecommerce page')
+})
+
+app.get('/api/v1', (req, res) => {
+  console.log(res.cookies)
   res.send('This is the fist ecommerce page')
 })
 
