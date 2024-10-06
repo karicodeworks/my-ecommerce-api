@@ -22,15 +22,41 @@ const register = async (req, res) => {
 
   attachCookiesToResponse({ res, user: tokenUser })
 
-  // res.status(StatusCodes.CREATED).json({ user: tokenUser })
+  res.status(StatusCodes.CREATED).json({ user: tokenUser })
 }
 
 const login = async (req, res) => {
-  res.send('This is login')
+  const { email, password } = req.body
+
+  if (!email || !password) {
+    throw new CustomError.BadRequestError('Enter an email and a password')
+  }
+
+  const user = await User.findOne({ email })
+
+  if (!user) {
+    throw new CustomError.UnauthenticatedError('Mteja hapatikani')
+  }
+
+  const isPasswordCorrect = await user.comparePassword(password)
+
+  if (!isPasswordCorrect) {
+    throw new CustomError.UnauthenticatedError('password does not match')
+  }
+
+  const tokenUser = { name: user.name, userId: user._id, role: user.role }
+
+  attachCookiesToResponse({ res, user: tokenUser })
+
+  res.status(StatusCodes.CREATED).json({ user: tokenUser })
 }
 
 const logout = async (req, res) => {
-  res.send('This is logout')
+  res.cookie('token', 'logout', {
+    httpOnly: true,
+    expires: new Date(Date.now()),
+  })
+  res.status(StatusCodes.OK).json({ msg: 'user logged out!' })
 }
 
 module.exports = {
