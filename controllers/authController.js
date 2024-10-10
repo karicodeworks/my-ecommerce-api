@@ -1,7 +1,7 @@
 const User = require('../models/Users')
 const { StatusCodes } = require('http-status-codes')
 const CustomError = require('../errors')
-const { attachCookiesToResponse } = require('../utils')
+const { attachCookiesToResponse, createTokenUser } = require('../utils')
 
 const register = async (req, res) => {
   const { name, email, password } = req.body
@@ -18,7 +18,7 @@ const register = async (req, res) => {
 
   const user = await User.create({ name, email, password, role })
 
-  const tokenUser = { name: user.name, userId: user._id, role: user.role }
+  const tokenUser = createTokenUser(user)
 
   attachCookiesToResponse({ res, user: tokenUser })
 
@@ -44,11 +44,11 @@ const login = async (req, res) => {
     throw new CustomError.UnauthenticatedError('password does not match')
   }
 
-  const tokenUser = { name: user.name, userId: user._id, role: user.role }
+  const tokenUser = createTokenUser(user)
 
   attachCookiesToResponse({ res, user: tokenUser })
 
-  res.status(StatusCodes.CREATED).json({ user: tokenUser })
+  res.status(StatusCodes.OK).json({ user: tokenUser })
 }
 
 const logout = async (req, res) => {
