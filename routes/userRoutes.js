@@ -16,7 +16,7 @@ const {
 
 router
   .route('/')
-  .get(authenticateUser, authorizePermissions('admin', 'user'), getAllUsers)
+  .get(authenticateUser, authorizePermissions('admin'), getAllUsers)
 
 router.route('/showMe').get(authenticateUser, showCurrentUser)
 router.route('/updateUser').post(authenticateUser, updateUser)
