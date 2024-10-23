@@ -27,3 +27,18 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 }
 
 module.exports = errorHandlerMiddleware
+
+//Optional Switch Statement
+// switch (true) {
+//   case err.code && err.code === 11000:
+//     customError.msg = `Duplicate value entered for ${Object.keys(err.keyValue)} field, please choose another value`;
+//     customError.statusCode = StatusCodes.BAD_REQUEST;
+//     break;
+//   case err.name === 'ValidationError':
+//     customError.msg = Object.values(err.errors).map((item) => item.message).join(',');
+//     customError.statusCode = StatusCodes.BAD_REQUEST
+//     break;
+//   case err.name === 'CastError':
+//     customError.msg = `not item found with id: ${err.value}`;
+//     customError.statusCode = StatusCodes.NOT_FOUND;
+// }
