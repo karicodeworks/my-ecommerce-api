@@ -20,6 +20,7 @@ const userRouter = require('./routes/userRoutes')
 const productRouter = require('./routes/productRoutes')
 const fileUpload = require('express-fileupload')
 const reviewRouter = require('./routes/reviewRoutes')
+const orderRouter = require('./routes/orderRoutes')
 
 //Cloudinary v2
 const cloudinary = require('cloudinary').v2
@@ -51,6 +52,7 @@ app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1/products', productRouter)
 app.use('/api/v1/reviews', reviewRouter)
+app.use('/api/v1/orders', orderRouter)
 
 app.use(notFoundMiddleware)
 app.use(errorHandlerMiddleware)
