@@ -1,7 +1,12 @@
 const User = require('../models/Users')
 const { StatusCodes } = require('http-status-codes')
 const CustomError = require('../errors')
-const { attachCookiesToResponse, createTokenUser } = require('../utils')
+const {
+  attachCookiesToResponse,
+  createTokenUser,
+  sendVerificationEmail,
+} = require('../utils')
+const crypto = require('crypto')
 
 const register = async (req, res) => {
   const { name, email, password } = req.body
@@ -16,13 +21,49 @@ const register = async (req, res) => {
     throw new CustomError.BadRequestError('The email is already in use.')
   }
 
-  const user = await User.create({ name, email, password, role })
+  const verificationToken = crypto.randomBytes(40).toString('hex')
 
-  const tokenUser = createTokenUser(user)
+  const user = await User.create({
+    name,
+    email,
+    password,
+    role,
+    verificationToken,
+  })
 
-  attachCookiesToResponse({ res, user: tokenUser })
+  await sendVerificationEmail({
+    name: user.name,
+    email: user.email,
+    verificationToken: user.verificationToken,
+    origin: 'http://localhost:3000',
+  })
 
-  res.status(StatusCodes.CREATED).json({ user: tokenUser })
+  res.status(StatusCodes.CREATED).json({
+    msg: 'Success, user has been created.',
+  })
+}
+
+const verifyEmail = async (req, res) => {
+  const { verificationToken, email } = req.body
+  const user = await User.findOne({ email })
+
+  if (!user) {
+    throw new CustomError.NotFoundError('User not found')
+  }
+
+  if (verificationToken === user.tokenVerification) {
+    throw new CustomError.BadRequestError(
+      'The verification token does not match'
+    )
+  }
+
+  user.isVerified = true
+  user.verified = Date.now()
+  user.verificationToken = ''
+
+  await user.save()
+
+  res.status(200).json({ msg: 'Email is verified' })
 }
 
 const login = async (req, res) => {
@@ -35,13 +76,17 @@ const login = async (req, res) => {
   const user = await User.findOne({ email })
 
   if (!user) {
-    throw new CustomError.UnauthenticatedError('Mteja hapatikani')
+    throw new CustomError.UnauthenticatedError('User not found')
   }
 
   const isPasswordCorrect = await user.comparePassword(password)
 
   if (!isPasswordCorrect) {
     throw new CustomError.UnauthenticatedError('password does not match')
+  }
+
+  if (!user.isVerified) {
+    throw new CustomError.UnauthenticatedError('Please verify you email')
   }
 
   const tokenUser = createTokenUser(user)
@@ -63,4 +108,5 @@ module.exports = {
   register,
   login,
   logout,
+  verifyEmail,
 }
