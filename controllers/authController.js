@@ -88,7 +88,7 @@ const login = async (req, res) => {
   }
 
   if (!user.isVerified) {
-    throw new CustomError.UnauthenticatedError('Please verify you email')
+    throw new CustomError.UnauthenticatedError('Please verify your email')
   }
 
   const tokenUser = createTokenUser(user)
@@ -123,10 +123,18 @@ const login = async (req, res) => {
 }
 
 const logout = async (req, res) => {
-  res.cookie('token', 'logout', {
+  await Token.findOneAndDelete({ user: req.user.userId })
+
+  res.cookie('accessToken', 'logout', {
     httpOnly: true,
     expires: new Date(Date.now()),
   })
+
+  res.cookie('refreshToken', 'logout', {
+    httpOnly: true,
+    expires: new Date(Date.now()),
+  })
+
   res.status(StatusCodes.OK).json({ msg: 'user logged out!' })
 }
 
