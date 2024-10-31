@@ -1,4 +1,6 @@
 const User = require('../models/Users')
+const Token = require('../models/Token')
+
 const { StatusCodes } = require('http-status-codes')
 const CustomError = require('../errors')
 const {
@@ -91,9 +93,33 @@ const login = async (req, res) => {
 
   const tokenUser = createTokenUser(user)
 
-  attachCookiesToResponse({ res, user: tokenUser })
+  // Create refresh token
+  let refreshToken = ''
 
-  res.status(StatusCodes.OK).json({ user: tokenUser })
+  // Check if token exists
+  const existingToken = await Token.findOne({ user: user_id })
+
+  if (existingToken) {
+    const { isValid } = existingToken
+    if (!isValid) {
+      throw new CustomError.UnauthenticatedError('User cannot access this site')
+    }
+    refreshToken = existingToken.refreshToken
+    attachCookiesToResponse({ res, user: tokenUser, refreshToken })
+    res.status(StatusCodes.OK).json({ user: tokenUser, token })
+    return
+  }
+
+  refreshToken = crypto.randomBytes(40).toString('hex')
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+  const userToken = { refreshToken, ip, userAgent, user: user._id }
+
+  const token = await Token.create(userToken)
+
+  attachCookiesToResponse({ res, user: tokenUser, refreshToken })
+
+  res.status(StatusCodes.OK).json({ user: tokenUser, token })
 }
 
 const logout = async (req, res) => {
