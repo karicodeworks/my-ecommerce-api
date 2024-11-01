@@ -33,6 +33,12 @@ const UserSchema = new mongoose.Schema({
     default: false,
   },
   verified: Date,
+  passwordToken: {
+    type: String,
+  },
+  passwordTokenExpiry: {
+    type: Date,
+  },
 })
 
 UserSchema.pre('save', async function () {
