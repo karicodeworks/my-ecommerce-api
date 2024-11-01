@@ -153,7 +153,7 @@ const forgotPassword = async (req, res) => {
 
     // Send Email
     const origin = 'http://localhost:3000'
-    sendResetPasswordEmail({
+    await sendResetPasswordEmail({
       name: user.name,
       email: user.email,
       token: passwordToken,
@@ -184,7 +184,7 @@ const resetPassword = async (req, res) => {
   const user = await User.findOne({ email })
 
   if (user) {
-    const currentDate = new Date.now()
+    const currentDate = new Date()
     if (
       user.passwordToken === createHash(token) &&
       user.passwordTokenExpiry > currentDate
